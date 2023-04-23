@@ -10,7 +10,14 @@ from result import Result
 
 
 class HltvClient:
+    """
+    The HLTV API client that exposes data fetching functions.
+    """
+
     def __init__(self):
+        """
+        Initialize a new HltvClient object.
+        """
         self._driver = self._initialize_undetected_chromedriver()
 
     def _initialize_undetected_chromedriver(self) -> WebDriver:

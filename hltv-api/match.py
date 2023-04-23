@@ -11,18 +11,21 @@ from utils import get_id_from_event_url, get_id_from_match_url, get_id_from_team
 
 class Match:
     """
-    Detailed information about the final statistics for a match.
-
-    Parameters
-    ----------
-    match_url : str
-        The URL for the match page.
-
-    driver : WebDriver
-        An instance of Selenium's Chrome WebDriver that will be used to fetch the match data.
+    Match details and stats
     """
 
     def __init__(self, match_url: str, driver: WebDriver):
+        """
+        Initialize a new Match object.
+
+        Parameters
+        ----------
+        match_url : str
+            The URL for the match page.
+
+        driver : WebDriver
+            The Selenium WebDriver instance that will be used to fetch the match data.
+        """
         driver.get(match_url)
         sleep(5)
 
@@ -38,6 +41,7 @@ class Match:
         self.match_url: str = match_url
         self.hltv_event_id: int = self._get_hltv_event_id(driver)
         self.best_of: Optional[int] = self._get_best_of(driver)
+
         self.team1_name: Optional[str] = None
         self.team1_hltv_team_id: Optional[int] = None
         self.team1_maps_won: Optional[int] = None
@@ -46,19 +50,10 @@ class Match:
         self.team2_hltv_team_id: Optional[int] = None
         self.team2_maps_won: Optional[int] = None
         self.team2_world_rank: Optional[int] = None
-
         self._set_team_values(team_num=1, driver=driver)
         self._set_team_values(team_num=2, driver=driver)
 
         self.pick_bans: List[PickBan] = self._get_pick_bans(driver)
-
-    def __str__(self) -> str:
-        s: str = "Match:\n"
-        attrs = vars(self)
-        for key, value in attrs.items():
-            s += f"{str(key)}: {str(value)}\n"
-        s += "\n"
-        return s
 
     def _set_team_values(self, driver: WebDriver, team_num: int):
         teams_div = driver.find_element(By.XPATH, "//div[@class='standard-box teamsBox']")
