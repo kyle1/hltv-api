@@ -5,10 +5,11 @@ from typing import List
 import undetected_chromedriver as uc
 from undetected_chromedriver import ChromeOptions
 
+from match import Match
 from result import Result
 
 
-class HltvDriver:
+class HltvClient:
     def __init__(self):
         self._driver = self._initialize_undetected_chromedriver()
 
@@ -17,9 +18,7 @@ class HltvDriver:
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         # options.add_argument("--headless") # Currently does not work with undetected_chromedriver
-        driver: WebDriver = uc.Chrome(
-            use_subprocess=True, options=options, version_main=111
-        )
+        driver: WebDriver = uc.Chrome(use_subprocess=True, options=options, version_main=111)
         return driver
 
     def quit(self):
@@ -41,8 +40,6 @@ class HltvDriver:
             current_offset += 100
         return results
 
-
-driver = HltvDriver()
-results = driver.get_results()
-
-print(len(results))
+    def get_match(self, match_url) -> Match:
+        match = Match(match_url=match_url, driver=self._driver)
+        return match
