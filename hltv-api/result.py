@@ -7,18 +7,24 @@ from utils import get_id_from_match_url
 
 class Result:
     """
-    Basic result data for a match
-
-    Parameters
-    ----------
-    driver : WebDriver
-        An instance of Selenium's Chrome WebDriver to use for data fetching.
-
-    result_div : WebElement
-        The result div that contains the result information.
+    Results for a match. This object contains basic result information such
+    as match date, teams, and final score. Detailed match information and
+    stats are contained within the Match class.
     """
 
     def __init__(self, result_div: WebElement):
+        """
+        Initialize a new Result object.
+
+        Parameters
+        ----------
+        driver : WebDriver
+            An instance of Selenium's Chrome WebDriver to use for data fetching.
+
+        result_div : WebElement
+            The result div that contains the result information.
+        """
+
         self.match_url = result_div.find_element(By.TAG_NAME, "a").get_attribute("href")
         self.hltv_match_id = get_id_from_match_url(self.match_url)
         self.match_date = datetime.fromtimestamp(
