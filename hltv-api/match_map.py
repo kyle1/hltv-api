@@ -4,7 +4,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from time import sleep
 from typing import List, Optional
 
-# from match_map_player import MatchMapPlayer
+from match_map_player import MatchMapPlayer
 from utils import get_id_from_match_map_url, get_id_from_match_url, get_id_from_team_url
 
 
@@ -71,6 +71,13 @@ class MatchMap:
         self.team2_bombs_exploded: Optional[int] = None
         self.team2_bombs_defused: Optional[int] = None
         self._set_team_bomb_stats(driver)
+
+        self.team1_map_players: List[MatchMapPlayer] = self._get_match_map_players(
+            driver=driver, hltv_match_map_id=self.hltv_match_map_id, team_num=1, side="Both"
+        )
+        self.team2_map_players: List[MatchMapPlayer] = self._get_match_map_players(
+            driver=driver, hltv_match_map_id=self.hltv_match_map_id, team_num=2, side="Both"
+        )
 
     def __str__(self) -> str:
         s: str = "MatchMap:\n"
@@ -160,3 +167,40 @@ class MatchMap:
             if "bomb_exploded" in round_image.get_attribute("src"):
                 bombs_exploded += 1
         return bombs_exploded
+
+    def _get_match_map_players(
+        self, driver: WebDriver, hltv_match_map_id: int, team_num: int, side: str
+    ) -> List[MatchMapPlayer]:
+        # hltv_team_id = self.team1_hltv_team_id if team_num == 1 else self.team2_hltv_team_id
+
+        hltv_team_id: int | None = None
+        if team_num == 1:
+            hltv_team_id = self.team1_hltv_team_id
+        elif team_num == 2:
+            hltv_team_id = self.team2_hltv_team_id
+
+        if hltv_team_id == None:
+            return []
+
+        # There are 6 stat tables, in this order:
+        # 1. Team 1 both sides
+        # 2. Team 1 T side (hidden by default)
+        # 3. Team 1 CT side (hidden by default)
+        # 4. Team 2 both sides
+        # 5. Team 2 T side (hidden by default)
+        # 6. Team 2 CT side (hidden by default)
+        table_index = (team_num - 1) * 3 + (0 if side == "Both" else 1 if side == "T" else 2)
+
+        stats_table = driver.find_elements(By.CLASS_NAME, "stats-table")[table_index]
+        player_trs = stats_table.find_element(By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "tr")
+
+        players: List[MatchMapPlayer] = []
+        for tr in player_trs:
+            player = MatchMapPlayer(
+                player_tr=tr,
+                hltv_match_map_id=hltv_match_map_id,
+                hltv_team_id=int(hltv_team_id),
+                side=side,
+            )
+            players.append(player)
+        return players
