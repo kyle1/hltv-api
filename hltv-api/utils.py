@@ -13,3 +13,8 @@ def get_id_from_match_url(url: str) -> int:
 
 def get_id_from_event_url(url: str) -> int:
     return int(url.split("/")[4])
+
+
+def get_id_from_match_map_url(url: str) -> int:
+    # https://www.hltv.org/stats/matches/mapstatsid/154582/fnatic-vs-9ine
+    return int(url.split("/")[6])

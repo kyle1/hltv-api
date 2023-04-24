@@ -48,5 +48,15 @@ class HltvClient:
         return results
 
     def get_match(self, match_url) -> Match:
-        match = Match(match_url=match_url, driver=self._driver)
+        match = Match(driver=self._driver, url=match_url)
         return match
+
+
+client = HltvClient()
+
+results = client.get_results()
+
+match = client.get_match(results[0].match_url)
+
+for map in match.match_maps:
+    print(map)

@@ -19,10 +19,10 @@ class Result:
         Parameters
         ----------
         driver : WebDriver
-            An instance of Selenium's Chrome WebDriver to use for data fetching.
+            The Selenium WebDriver instance to use to fetch the data.
 
         result_div : WebElement
-            The result div that contains the result information.
+            The div element that contains the result information.
         """
 
         self.match_url = result_div.find_element(By.TAG_NAME, "a").get_attribute("href")

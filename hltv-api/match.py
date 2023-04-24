@@ -5,29 +5,33 @@ from selenium.webdriver.remote.webelement import WebElement
 from time import sleep
 from typing import List, Optional, Union
 
+from match_map import MatchMap
 from pick_ban import PickBan
 from utils import get_id_from_event_url, get_id_from_match_url, get_id_from_team_url
 
 
 class Match:
     """
-    Match details and stats
+    Information about a match, such as the match date, the
+    teams playing, and the final
     """
 
-    def __init__(self, match_url: str, driver: WebDriver):
+    def __init__(self, driver: WebDriver, url: str):
         """
         Initialize a new Match object.
 
         Parameters
         ----------
-        match_url : str
-            The URL for the match page.
-
         driver : WebDriver
-            The Selenium WebDriver instance that will be used to fetch the match data.
+            The Selenium WebDriver instance to use to fetch the data.
+
+        url : str
+            The URL of the match page.
         """
-        driver.get(match_url)
+        print(f"Getting match from {url}...")
+        driver.get(url)
         sleep(5)
+        print("Done waiting for page to load!")
 
         skip_keywords = ["forfeit", "default", "withdrew", "withdraw", "showmatch"]
         # The veto box will state if the match had a forfeiture, was a showmatch, etc.
@@ -36,9 +40,9 @@ class Match:
             self.skipped = True
             return
 
-        self.hltv_match_id: int = get_id_from_match_url(match_url)
+        self.hltv_match_id: int = get_id_from_match_url(url)
         self.match_date: datetime = self._get_match_date(driver)
-        self.match_url: str = match_url
+        self.url: str = url
         self.hltv_event_id: int = self._get_hltv_event_id(driver)
         self.best_of: Optional[int] = self._get_best_of(driver)
 
@@ -54,6 +58,7 @@ class Match:
         self._set_team_values(team_num=2, driver=driver)
 
         self.pick_bans: List[PickBan] = self._get_pick_bans(driver)
+        self.match_maps: List[MatchMap] = self._get_match_maps(driver)
 
     def _set_team_values(self, driver: WebDriver, team_num: int):
         teams_div = driver.find_element(By.XPATH, "//div[@class='standard-box teamsBox']")
@@ -126,3 +131,13 @@ class Match:
             )
             pick_bans.append(pb)
         return pick_bans
+
+    def _get_match_maps(self, driver: WebDriver) -> List[MatchMap]:
+        map_links = driver.find_elements(By.CLASS_NAME, "results-stats")
+        map_urls = [map_link.get_attribute("href") for map_link in map_links]
+        match_maps: List[MatchMap] = []
+        for map_url in map_urls:
+            match_map = MatchMap(driver=driver, url=map_url, match_id=self.hltv_match_id)
+            match_maps.append(match_map)
+            sleep(5)
+        return match_maps
